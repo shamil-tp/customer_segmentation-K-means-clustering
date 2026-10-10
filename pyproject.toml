@@ -1,0 +1,62 @@
+[tool.ruff]
+# Target Python version and line length
+target-version = "py312"
+line-length = 88
+
+# Exclude common non-source directories
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+# Selected rule sets:
+# E / W  - pycodestyle errors and warnings
+# F      - Pyflakes (unused imports, undefined variables)
+# I      - isort (automated import sorting)
+# B      - flake8-bugbear (catches common bugs and design pitfalls)
+# C4     - flake8-comprehensions (better list/dict/set comprehensions)
+# UP     - pyupgrade (enforces modern Python 3.12+ syntax conventions)
+# SIM    - flake8-simplify (suggests cleaner code simplifications)
+# S      - flake8-bandit (basic security testing / weak cryptography checks)
+select = [
+    "E", "W",
+    "F",
+    "I",
+    "B",
+    "C4",
+    "UP",
+    "SIM",
+    "S",
+]
+
+# Rules to ignore across the codebase
+ignore = [
+    "E501", # Line too long (handled automatically by `ruff format`)
+    "S101", # Allow `assert` statements (required for pytest)
+]
+
+# Unfixable rules (prevent auto-fixing sensitive or dangerous rules)
+unfixable = [
+    "F841", # Don't auto-remove unused variables while typing code
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore security checks in test files (e.g., hardcoded test secrets or random values)
+"tests/**/*" = ["S", "ARG001", "ARG002"]
+
+[tool.ruff.lint.isort]
+# Group standard library imports first, then 3rd-party dependencies, then local modules
+combine-as-imports = true
+known-first-party = ["app"]
+
+[tool.ruff.format]
+# Enforce double quotes and clean trailing commas (replaces Black formatter)
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

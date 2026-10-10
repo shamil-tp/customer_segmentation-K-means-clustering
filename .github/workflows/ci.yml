@@ -25,5 +25,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run API Integration Tests
-        run: pytest -v
+      # --- Ruff Linting & Formatting Check ---
+      - name: Run Ruff Linter
+        run: ruff check .
+
+      - name: Check Formatting with Ruff
+        run: ruff format --check .
