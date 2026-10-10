@@ -35,15 +35,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # --- Step 1: Run pytest before creating release ---
+      # --- Step 1: Run pytest (non-blocking) ---
       - name: Run Tests
-        run: pytest -v --collect-only || true
+        run: pytest -v
+        continue-on-error: true # Test failures will be logged but won't halt the release pipeline
 
-      # --- Step 2: Build Source Distribution / Wheel Archive ---
+      # --- Step 2: Build Release Package ---
       - name: Build Release Package
         run: |
           mkdir -p dist
-          tar -czvf dist/source-code.tar.gz app/ requirements.txt
+          # Package project Python files, trained models (.pkl), datasets (.csv), configs, and tests
+          tar -czvf dist/customer_segmentation_v1.tar.gz *.py *.pkl *.csv pyproject.toml requirements.txt tests/
 
       # --- Step 3: Create GitHub Release ---
       - name: Create GitHub Release
@@ -51,7 +53,7 @@ jobs:
         with:
           tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: |
-            dist/source-code.tar.gz
+            dist/customer_segmentation_v1.tar.gz
           generate_release_notes: true
           draft: false
           prerelease: false
