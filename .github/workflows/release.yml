@@ -1,0 +1,60 @@
+name: Draft Release and Upload Assets
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on any tag starting with "v" (e.g., v1.0.0, v1.0.1)
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name to release (e.g. v1.0.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write # Required permission to create releases and upload assets
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Fetches full history for accurate changelog generation
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # --- Step 1: Run pytest before creating release ---
+      - name: Run Tests
+        run: pytest -v
+
+      # --- Step 2: Build Source Distribution / Wheel Archive ---
+      - name: Build Release Package
+        run: |
+          mkdir -p dist
+          # Package project files into a tar.gz archive
+          tar -czvf dist/source-code.tar.gz app/ requirements.txt
+
+      # --- Step 3: Create GitHub Release ---
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          files: |
+            dist/source-code.tar.gz
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
